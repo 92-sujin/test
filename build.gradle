@@ -1,0 +1,76 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.3'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.23' // 추가
+	implementation 'org.modelmapper:modelmapper:3.1.0'
+	//OAUTH
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	implementation 'com.azure.spring:azure-spring-boot-starter-active-directory:3.12.0'
+	implementation 'org.springframework.security:spring-security-oauth2-jose'
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 처리
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// H2 데이터베이스
+	runtimeOnly 'com.h2database:h2'
+	// postgresql
+	runtimeOnly 'org.postgresql:postgresql'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+tasks.register('npmInstall', Exec) {
+	workingDir = file("${project.projectDir}/frontend")
+	commandLine 'npm', 'install'
+}
+
+tasks.register('npmBuild', Exec) {
+	dependsOn 'npmInstall'
+	workingDir = file("${project.projectDir}/frontend")
+	commandLine 'npm', 'run', 'build'
+}
+
+tasks.register('copyFrontend', Copy) {
+	dependsOn 'npmBuild'
+	from file("${project.projectDir}/frontend/dist")  // Vue.js 빌드 결과
+	into file("${project.projectDir}/backend/src/main/resources/static")  // Spring Boot 정적 리소스 폴더
+}
+
+bootJar {
+	dependsOn 'copyFrontend'  // Spring Boot 빌드 전에 Vue.js 빌드 및 복사
+}
+
+bootRun {
+	dependsOn 'copyFrontend'  // Spring Boot 실행 전에 Vue.js 빌드 및 복사
+}
