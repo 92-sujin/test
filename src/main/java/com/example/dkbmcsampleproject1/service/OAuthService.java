@@ -5,7 +5,9 @@ import com.example.dkbmcsampleproject1.dto.oauth.GoogleUserInfo;
 import com.example.dkbmcsampleproject1.dto.oauth.KakaoUserInfo;
 import com.example.dkbmcsampleproject1.dto.oauth.NaverUserInfo;
 import com.example.dkbmcsampleproject1.dto.oauth.OAuthUserInfo;
+import com.example.dkbmcsampleproject1.entity.LoginEntity;
 import com.example.dkbmcsampleproject1.entity.UserEntity;
+import com.example.dkbmcsampleproject1.repository.LoginRepository;
 import com.example.dkbmcsampleproject1.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.Collections;
 
 @Service
@@ -23,7 +27,6 @@ public class OAuthService extends DefaultOAuth2UserService {
 
     @Autowired
     private UserRepository userRepository;
-    private final JwtUtil jwtUtil;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -57,20 +60,19 @@ public class OAuthService extends DefaultOAuth2UserService {
         String name = oAuthUserInfo.getName();
 
         // 유저가 이미 존재하는지 확인
-        UserEntity user = userRepository.findByLoginId(loginId);
+        UserEntity user = userRepository.findByLoginId(loginId); // 이메일로 사용자 조회
 
         if (user == null) {
             // 유저가 없으면 회원가입 처리
-            user = UserEntity.builder() // 빌더 객체 생성
+            user = UserEntity.builder()
                     .loginId(loginId)
                     .userName(name)
                     .userEmail(email)
-                    .providerId(providerId)
-                    .provider(provider)
+                    .signUpDate(LocalDateTime.now())
                     .build();
             userRepository.save(user);
         }
-
+        
         // 유저 정보로 OAuth2User 반환 (권한 설정 등 추가 가능)
         return new DefaultOAuth2User(
                 Collections.emptyList(),  // 권한 리스트를 빈 리스트로 설정

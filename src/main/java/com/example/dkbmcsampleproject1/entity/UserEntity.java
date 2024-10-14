@@ -1,33 +1,39 @@
 package com.example.dkbmcsampleproject1.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
-import org.modelmapper.TypeMap;
 
+import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user_table")
+@Table(name = "user_info") // 회원 정보를 저장하는 테이블
 public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Long id;
-    @Column(name = "login_id", nullable = false)
-    private String loginId;
+    private String id; // 기본 회원 ID
+
+    @Column(name = "login_id",nullable = false, unique = true)
+    private String loginId; // 로그인 ID
+
+    @Column(name = "user_name",nullable = false)
+    private String userName; // 회원 이름
+
+    @Column(name = "user_email",nullable = false, unique = true)
+    private String userEmail; // 회원 이메일
+
     @Column(name = "user_password")
-    private String userPassword;
-    @Column(name = "user_name", nullable = false)
-    private String userName;
-    @Column(name = "user_email", nullable = false)
-    private String userEmail;
-    @Column(name = "provider")
-    private String provider;
-    @Column(name = "provider_id")
-    private String providerId;
+    private String userPassword; // 비밀번호
+
+    @Column(name = "phone_number")
+    private String phoneNumber; // 핸드폰 번호
+
+    @Column(name = "sign_up_date")
+    private LocalDateTime signUpDate; // 가입일
 
 }

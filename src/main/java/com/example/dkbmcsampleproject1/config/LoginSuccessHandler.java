@@ -52,8 +52,8 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
             email = (String) kakaoAccount.get("email");
         }
 
-        // JWT 생성
-        Map<String, Object> claims = Map.of("name", name, "email", email);
+        // JWT 생성 (sns로그인인 것을 구분하기위해 soruce : sns 추가)
+        Map<String, Object> claims = Map.of("name", name, "email", email,"soruce","sns" );
         String jwt = jwtUtil.generateToken(claims, email);
 
         // 프론트엔드 URL로 리디렉션
