@@ -38,4 +38,17 @@ out/
 .vscode/
 node_modules/
 
-src/main/resources/application.yml
+### Frontend 관련 ###
+dist/                        # Vue.js나 React 빌드 결과물 무시
+*.log                         # 로그 파일 무시
+npm-debug.log*                # npm 디버그 로그 무시
+yarn-debug.log*               # Yarn 디버그 로그 무시
+yarn-error.log*               # Yarn 에러 로그 무시
+*.local                       # 환경 설정 파일 무시
+.env                          # 환경변수 파일 무시
+
+# 프론트엔드 소스 코드가 저장된 폴더가 src/main/frontend에 있는 경우
+!src/main/frontend/**         # 프론트엔드 소스코드를 무시하지 않음
+
+### Spring Boot ###
+src/main/resources/application.yml # Spring Boot 설정 파일 무시
