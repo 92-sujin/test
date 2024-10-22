@@ -24,6 +24,12 @@ public class MypageService {
     @Autowired
     private LoginRepository loginRepository;
 
+    /**
+     * getUserInfo : email로 조회하여 유저 정보를 가져옴
+     *
+     * @param email - email 문자열
+     * @return BasicResponse(userDto)
+     */
     public BasicResponse getUserInfo(String email) {
         // 유저가 이미 존재하는지 확인
         LoginEntity user = loginRepository.findByUserEmail(email);

@@ -3,7 +3,6 @@ package com.example.dkbmcsampleproject1.service;
 import com.example.dkbmcsampleproject1.common.BasicResponse;
 import com.example.dkbmcsampleproject1.common.JwtUtil;
 import com.example.dkbmcsampleproject1.dto.LoginDto;
-import com.example.dkbmcsampleproject1.dto.UserDto;
 import com.example.dkbmcsampleproject1.entity.LoginEntity;
 import com.example.dkbmcsampleproject1.entity.UserEntity;
 import com.example.dkbmcsampleproject1.repository.LoginRepository;
@@ -29,6 +28,14 @@ public class LoginService {
     private final JwtUtil jwtUtil;
     private final ModelMapper modelMapper;
 
+    /**
+     * isUser : 유저가 존재 하는 지 확인 후 존재 하면 로그인 정보에  insert
+     *
+     * @param loginId - 로그인 아이디
+     * @param userPassword - 유저 비밀번호
+     * @param userIp - 유저 IP
+     * @return Map<String,Object> response : 응답 데이터
+     */
     public Map<String, Object> isUser(String loginId, String userPassword, String userIp) {
 
         // 로그인 ID로 유저 조회
@@ -102,6 +109,13 @@ public class LoginService {
         return successResponse;
     }
 
+    /**
+     * isSnSUser : sns 유저가 존재 하는 지 확인 후 존재 하면 로그인 정보에  insert
+     *
+     * @param email - 이메일 주소
+     * @param userIp - 유저 IP
+     * @return Map<String,Object> response : 응답 데이터
+     */
     public Map<String, Object> isSnSUser(String email, String userIp) {
         Map<String, Object> successResponse = new HashMap<>();
 
@@ -126,6 +140,7 @@ public class LoginService {
                         .provider(provider)   // SNS 제공자 정보 필요시 설정 (ex. Google, Facebook)
                         .providerId(providerId) // SNS 제공자의 ID 필요시 설정
                         .loginIp(userIp) // 로그인한 IP
+                        .firstLoginDate(LocalDateTime.now())
                         .lastLoginDate(LocalDateTime.now()) // 로그인 시간
                         .build();
 
@@ -158,6 +173,12 @@ public class LoginService {
         return successResponse;
     }
 
+    /**
+     * snsLoginCancel : sns 로그인 후 페이지를 떠났을 경우 로그인 정보에서 삭제
+     *
+     * @param loginId - sns 로그인 아이디
+     * @return Map<String,Object> response : 응답 데이터
+     */
     public BasicResponse<LoginDto> snsLoginCancel(String loginId) {
 
         BasicResponse<LoginDto> response;

@@ -19,6 +19,12 @@ import java.util.stream.Collectors;
 public class UserService implements JpaService<UserDto>{
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+
+    /**
+     * findAll : 유저 전체 조회
+     *
+     * @return BasicResponse(userDto)
+     */
     @Override
     public BasicResponse findAll() {
 
@@ -36,6 +42,12 @@ public class UserService implements JpaService<UserDto>{
                 .build();
     }
 
+    /**
+     * findByEmail : 이메일 주소로 유저 조회
+     *
+     * @param email : 이메일 주소
+     * @return BasicResponse(userDto)
+     */
     public BasicResponse findByEmail(String email) {
         // 요청한 이메일로 사용자 조회
         UserEntity userEntity = userRepository.findByUserEmail(email);
@@ -64,6 +76,12 @@ public class UserService implements JpaService<UserDto>{
                 .build();
     }
 
+    /**
+     * saveOrUpdateUser : 유저 정보를 저장 하거나 수정
+     *
+     * @param userDtos : 유저 정보
+     * @return BasicResponse(userDto)
+     */
     public BasicResponse saveOrUpdateUser(List<UserDto> userDtos) {
         // 각 UserDto를 순회하며 저장/수정
         for (UserDto userDto : userDtos) {
@@ -88,6 +106,12 @@ public class UserService implements JpaService<UserDto>{
                 .build();
     }
 
+    /**
+     * create : 유저 정보를 생성
+     *
+     * @param req : 유저 정보
+     * @return BasicResponse(userDto)
+     */
     @Override
     public BasicResponse create(List<UserDto> req) {
 
@@ -107,6 +131,13 @@ public class UserService implements JpaService<UserDto>{
                 .build();
     }
 
+    /**
+     * create : 로그인 아이디로 유저 조회 후 업데이트 
+     *
+     * @param loginId : 로그인 아이디
+     * @param userDto : 유저 정보
+     * @return BasicResponse(userDto)
+     */
     @Override
     public BasicResponse update(String loginId, UserDto userDto) {
 

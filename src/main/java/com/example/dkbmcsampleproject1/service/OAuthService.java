@@ -28,6 +28,12 @@ public class OAuthService extends DefaultOAuth2UserService {
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     * loadUser : SNS 로그인 시 사용자의 SNS 계정 정보를 로드하여 OAuth2User로 변환합니다.
+     *
+     * @param userRequest OAuth2UserRequest - SNS 로그인 요청 정보 (클라이언트 등록 정보 및 인증 토큰 포함)
+     * @return DefaultOAuth2User - SNS 계정의 인증된 사용자 정보 (이름, 이메일, 공급자 ID 등)
+     */
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         // 기본적으로 제공되는 사용자 정보를 가져옴

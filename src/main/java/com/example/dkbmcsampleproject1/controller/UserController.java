@@ -17,10 +17,15 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final LoginService loginService;
 
+    /**
+     * saveUser : 유저 정보 저장
+     *
+     * @param userDto 유저 정보
+     * @return BasicResponse<userDto> - 유저 저장 결과를 포함한 응답 (상태 코드와 사용자 정보 또는 오류 메시지)
+     */
     @PostMapping("/user/saveUser")
-    public ResponseEntity<BasicResponse> createUser(@RequestBody List<UserDto> userDto) {
+    public ResponseEntity<BasicResponse> saveUser(@RequestBody List<UserDto> userDto) {
         BasicResponse response = userService.saveOrUpdateUser(userDto);
         return ResponseEntity.ok(response);
     }
