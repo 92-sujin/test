@@ -2,7 +2,6 @@
   <div class="home-container">
     <h1>User Name = {{ userName }}</h1>
     <h1>User Email = {{ userEmail }}</h1>
-
     -----------------------------------------
     <h1> 로그인한 ID는 {{this.loginId}} 이며 {{ this.provider}}로 로그인 하셨습니다.</h1>
     <button @click="logOut">로그아웃</button>
@@ -11,7 +10,7 @@
 
 <script>
 import {mapActions, mapGetters} from 'vuex';
-import {api,url} from "@/api/api";
+import { mypage } from "@/api/mypage";
 
 export default {
   name: 'HomePage',  // 이름이 규칙을 따르는지 확인 (vue/multi-word-component-names)
@@ -31,16 +30,24 @@ export default {
 
   methods: {
     ...mapActions('auth',['logout']),
-    getUrl() {
+    /**
+     * 유저 정보 가져오기
+     */
+    getUser() {
       let param = {
         email: this.userEmail
       }
-      api.serviceGet(url.getUser, param).then(res => {
-          this.loginId = res.response[0].loginId;
-          this.provider = res.response[0].provider;
-          console.log("this.loginId == " ,this.loginId);
-      })
+
+      mypage.getUser(param).then(res => {
+        this.loginId = res.response[0].loginId;
+        this.provider = res.response[0].provider;
+      }).catch(error => {
+        console.error('유저 정보 가져오기 실패:', error);
+      });
     },
+    /**
+     * 로그 아웃
+     */
     logOut() {
       // this.$store.dispatch('auth/logout')
       //     .then(() => {
@@ -57,7 +64,7 @@ export default {
     }
   },
   created() {
-    this.getUrl()
+    this.getUser()
   }
 
 };

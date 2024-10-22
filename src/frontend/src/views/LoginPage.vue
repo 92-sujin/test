@@ -9,27 +9,20 @@
       <button type="submit" class="login-btn">Login</button>
     </form>
 
+    <button class="login-btn" @click="goToSignIn">회원가입</button>
+
     <div class="oauth-container">
       <h2>SNS 로그인</h2>
-      <a :href="googleLoginUrl" class="oauth-btn google">
-        Login with Google
-      </a>
-      <a :href="azureLoginUrl" class="oauth-btn azure">
-       Login with Azure
-      </a>
-      <a :href="naverLoginUrl" class="oauth-btn naver">
-        Login with Naver
-      </a>
-      <a :href="kakaoLoginUrl" class="oauth-btn kakao">
-      Login with Kakao
-      </a>
+      <a :href="googleLoginUrl" class="oauth-btn google">Login with Google</a>
+      <a :href="naverLoginUrl" class="oauth-btn naver">Login with Naver</a>
+      <a :href="kakaoLoginUrl" class="oauth-btn kakao">Login with Kakao</a>
     </div>
   </div>
 </template>
 
 <script>
-import {mapActions} from "vuex";
-import {api,url} from "@/api/api";
+import {mapActions, mapGetters} from "vuex";
+import { login } from "@/api/login";
 
 export default {
   data() {
@@ -37,7 +30,6 @@ export default {
       userId: '',
       password: '',
       googleLoginUrl: 'http://localhost:8080/oauth2/authorization/google',
-      azureLoginUrl: 'http://localhost:8080/oauth2/authorization/azure',
       naverLoginUrl: 'http://localhost:8080/oauth2/authorization/naver',
       kakaoLoginUrl: 'http://localhost:8080/oauth2/authorization/kakao',
     };
@@ -45,45 +37,94 @@ export default {
 
   mounted() {
     const token = this.$route.query.token;
-    console.log("sns로그인 토큰 ",token)
+    console.log("SNS 로그인 토큰: ", token);
+
     if (token) {
-      this.saveToken(token);  // Vuex에 토큰 저장
-      this.$router.push('/home'); // 홈 화면으로 이동
+      // 토큰을 저장하고 사용자 이메일을 이용한 추가 정보 요청
+      this.saveToken(token).then(() => {
+        const userEmail = this.$store.getters['auth/userEmail'];
+        console.log("userEmail:", userEmail);
+
+        if (userEmail) {
+          this.processSnsLogin(userEmail);
+        } else {
+          console.error("사용자 이메일이 유효하지 않습니다.");
+        }
+      });
     }
   },
+
+  computed :{
+    ...mapGetters('auth', ['userEmail', 'userName', 'loginId'])  // loginId 매핑
+  },
+
   methods: {
-    ...mapActions('auth', ['saveToken']),
+    ...mapActions('auth', ['saveToken', 'logout']),
 
+    /**
+     * 로그인
+     */
     login() {
-      console.log("로그인")
+      console.log("로그인");
 
-      let param = {
+      const param = {
         loginId: this.userId,
         userPassword: this.password
-      }
-
-      api.servicePost(url.login, param) // POST 요청으로 변경
+      };
+      // login.js의 login 함수 호출
+      login.login(param)
           .then(res => {
-            console.log("res",res);
             if (res.code === "200") {
-              // 로그인 성공 시
+              // 로그인 성공 시 JWT 토큰을 저장하고 홈 화면으로 이동
               const token = res.jwtToken;
-              this.saveToken(token);
-              this.$router.push('/home'); // 홈 화면으로 이동
+              this.saveToken(token).then(() => {
+                this.$router.push('/home');
+              });
             } else {
-              // 로그인 실패 시 에러 메시지 표시
-              this.errorMessage = res.data.message;
-              console.error(res.data.message);
+              console.error("로그인 실패: ", res.message);
             }
           })
           .catch(error => {
-            console.error("로그인 실패", error);
-            this.errorMessage = "로그인 요청에 실패했습니다.";
-          });
+            console.error("로그인 에러: ", error);
+            alert("로그인 요청에 실패했습니다.");
+        });
+    },
+    /**
+     * 회원가입 페이지로 이동
+     */
+    goToSignIn() {
+      this.$router.push('/SignIn');
+    },
+    /**
+     * SNS 로그인
+     *
+     * @param userEmail SNS로 로그인 한 EMAIL 주소
+     */
+    processSnsLogin(userEmail) {
+      login.loginSns({ userEmail })
+          .then(res => {
+            // 핸드폰 번호 store에 저장
+            this.$store.dispatch('auth/saveUserId', res.userInfo.loginId);  // 로그인 ID 저장
+            if (res.code === "200") {
+              if (!res.isPhoneNumber) {
+                console.log("핸드폰 번호가 없습니다. 회원가입 페이지로 리디렉션");
+                this.$router.push({ path: '/SignIn', query: { source: 'sns' } });
+                this.$store.dispatch('auth/setRedirected', true);
+              } else {
+                console.log("핸드폰 번호가 존재합니다. 홈으로 리디렉션");
+                this.$router.push('/home');
+              }
+            }
+          })
+          .catch(error => {
+            console.error("SNS 로그인 에러: ", error);
+            localStorage.removeItem('jwt');
+        });
     }
   }
 };
 </script>
+
 <style scoped>
 .login-container {
   display: flex;
@@ -109,6 +150,7 @@ export default {
 .login-btn {
   width: 300px;
   padding: 10px;
+  margin: 10px 0;
   border-radius: 5px;
   border: none;
   background-color: #4caf50;
@@ -145,10 +187,6 @@ export default {
 
 .google {
   background-color: #db4437;
-}
-
-.azure {
-  background-color: #0078d4;
 }
 
 .naver {
